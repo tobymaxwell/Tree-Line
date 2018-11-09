@@ -15,4 +15,4 @@ for(i in files){
   m<-merge(l,m, all=T)
 }
 m
-tail(m, 50)
+tail(m,100)
