@@ -8,6 +8,8 @@ library(latticeExtra)
 library(GISTools)
 NTC<-raster("/Users/Maxwell/Documents/MRT/MOD44B_2016-03-05.Percent_Tree_Cover.tif")
 oregon<-readOGR("/Users/Maxwell/Documents/geospatial/orcnty2015/orcntyline.shp")
+library('rgdal')
+myFeatureClass<-readOGR("/Users/Maxwell/Downloads/OR_DEM_10M.gdb/")
 
 NTC.crs<- crs(NTC)
 OR<-spTransform(oregon, crs(NTC))
@@ -61,3 +63,35 @@ plot("/Users/Maxwell/Documents/geospatial/")
 writeRaster(ppt.crop,"/Users/Maxwell/Desktop/ppt.crop.tif")
 writeRaster(slope,"/Users/Maxwell/Desktop/slope.tif")
 writeRaster(aspect,"/Users/Maxwell/Desktop/aspect.tif")
+
+
+##Turn points into polygons
+
+library("sp")
+library("rgdal")
+library("raster")
+gps<-read.csv("gps.csv")
+
+#loop it all up
+str(gps)
+Sites<-levels(gps$Site)
+Aspect<-levels(gps$Aspect)
+Zone<-levels(gps$Zone)
+Poly<-SpatialPolygons(list())
+for(i in Sites){
+  for(j in Zone){
+    for(k in Aspect){
+  loc<-gps[gps$Site==i&gps$Aspect==k&gps$Zone==j,]
+      dat <- loc[,9:10]
+      ch <- chull(dat)
+      coords <- dat[c(ch, ch[1]), ]  # closed polygon
+      loc.poly <- SpatialPolygons(list(Polygons(list(Polygon(coords)), ID=paste0(i,k,j))))
+      loc.polydf <- SpatialPolygonsDataFrame(loc.poly, data=data.frame(ID=paste0(i,k,j)))
+      Poly<-bind(loc.polydf, Poly)
+    }
+  }
+}
+str(Poly)
+plot(Poly, lwd=5)
+
+loc.poly@polygons[[1]]@ID

@@ -3,7 +3,7 @@ library(rgdal)
 library(raster)
 library(maptools)
 library(tools)
-setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/GPX files/")
+setwd("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/GPX files/")
 files<-list.files(pattern=".gpx")
 files
 k<-NA
@@ -16,3 +16,4 @@ for(i in files){
 }
 m
 tail(m,100)
+write.csv
