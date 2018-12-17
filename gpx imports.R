@@ -16,4 +16,4 @@ for(i in files){
 }
 m
 tail(m,100)
-write.csv
+write.csv(m, "/Users/Maxwell/Desktop/gps.csv")
