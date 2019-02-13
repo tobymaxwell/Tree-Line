@@ -68,12 +68,20 @@ gps$SAZ<-as.factor(paste0(gps$Site, gps$Aspect, gps$Zone))
 names<-data.frame(sort(levels(gps$SAZ), decreasing=T))
 colnames(names)<-c("Name")
 Poly<-SpatialPolygonsDataFrame(Poly, data=names)
-writeOGR(obj=Poly,dsn="/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Site Shapes/", layer="DNF", driver="ESRI Shapefile")
+library(maptools)
+data.frame(Poly)
+setwd("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Site Shapes/")
+shapenames<-levels(names$Name)
+for(i in shapenames){
+writeSpatialShape(Poly[Poly$Name==i,], i)
+}
 #dem.latlong<-projectRaster(dem, crs=crs(Poly))
-#plot(dem.latlong)
+library(tmap)
+plot(dem.latlong)
+writeSpatialShape(Poly)
 plot(oregon)
 data.frame(Poly)
-plot(Poly[17:19,], add=T, lwd=5, col="Red")
+plot(Poly, add=T, lwd=5, col="red")
 
 slope
 gps
@@ -115,7 +123,7 @@ terrain.hood<-terrain(dem.hood, opt=c("slope","aspect", "tri", "tpi"), unit='deg
 terrain.elkhorn<-terrain(dem.elkhorn, opt=c("slope","aspect", "tri", "tpi"), unit='degrees')
 terrain.tumalo<-terrain(dem.tumalo, opt=c("slope","aspect", "tri", "tpi"), unit='degrees')
 terrain.wallowa<-terrain(dem.wallowa, opt=c("slope","aspect", "tri", "tpi"), unit='degrees')
-plot(terrain.hood)
+plot(terrain.elkhorn)
 
 gps$slope<-NA
 gps$aspect.deg<-NA
