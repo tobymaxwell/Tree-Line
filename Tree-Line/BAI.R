@@ -1,8 +1,8 @@
-install.packages("dplR")
+#install.packages("dplR")
 library("dplR")
 library(plyr)
 # Bring in master file of RWs
-Master=read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/Hall.csv", header=TRUE)
+Master=read.csv("/Users/Maxwell//OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/Hall.csv", header=TRUE)
 #Basic Ring Width Index calculations
 n<-min(na.omit(Master$Year))
 Master$Year<-as.numeric(rep(2017:n, each=2))
@@ -12,31 +12,22 @@ Master.T<-Master[-1] %>%
   summarise_all(funs(sum))
 Master.T<-data.frame(Master.T)
 str(Master.T)
-write.csv(Master.T, "/Users/tobymaxwell/Desktop/Master.csv")
-H.rwl<-read.csv("/Users/tobymaxwell/Desktop/Master.csv")
-#revdf<-function(df)df[seq(dim(df)[1],1),]
+revdf<-function(df)df[seq(dim(df)[1],1),]
 #Master.T<- Master.T[seq(dim(Master.T)[1],1),]
-RWI<-detrend(H.rwl[-1],make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
-rownames(RWI)<-H.rwl$Year
+RWI<-detrend(Master.T,make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
+rownames(RWI)<-Master.T$Year
 spag.plot(RWI[15:22], zfac=.3)
 rwl.report(RWI[15:22])
 
 ##### Calculate Master RWI using the C-Method (recomended method, see Biondi and Qeadan, 2008) 
 library(graphics)
 library(utils)
-data(gp.rwl)
-str(gp.rwl)
-gp.rwl$`50B`
-data(gp.po)
-gp.rwi <- cms(rwl = gp.rwl, po = gp.po)
-gp.crn <- chron(gp.rwi)
-crn.plot(gp.crn, add.spline = TRUE)
 str(Master.T)
 HSFAbLa<-Master.T[1:6]
-HSFAbLa<-revdf(HSFAbLa)
+#HSFAbLa<-revdf(HSFAbLa)
 rownames(HSFAbLa)<-HSFAbLa$Year
 PO<-NULL
-PO$series<-colnames(HSFAbLa[-1])
+PO$series<-c("T1", "T2", "T3", "T4", "T5")
 PO<-data.frame(PO)
 cols<-colnames(HSFAbLa[-1])
 lengths<-NULL
@@ -45,17 +36,172 @@ for(i in cols){
 lengths<-c(lengths, length)
 }
 PO$pith.offset<-lengths
-colnames(HSFAbLa[-1])
-RWI_C<-cms(HSFAbLa[-1], PO, c.hat.t = FALSE, c.hat.i = FALSE)
-#write.csv(RWI_C, "C:/Users/Paulo/Documents/R/CH2/RWI_C.csv")
-
-### Calculate and plot a mean RWI
+HSFAbLa<-HSFAbLa[-1]
+colnames(HSFAbLa)<-c("T1", "T2", "T3", "T4", "T5")
+#write.csv(PO, "/Users/Maxwell/Desktop/PO.csv")
+write.rwl(HSFAbLa,"/Users/Maxwell/Desktop/HSFAbLa2.csv")
+HSFAbLa<-read.rwl("/Users/Maxwell/Desktop/HSFAbLa2.csv", header=TRUE)
+rwl.report(HSFAbLa)
+RWI_C<-cms(HSFAbLa, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
 MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
 MeanChron
-crn.plot(MeanChron, add.spline=TRUE, nyrs=10, f=0.5, xlab="Years", ylab="Ring Width Index", 
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
          crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
 title("Ring Width Index", line = 3)
-title(sub = "RWI - AR Model", line = -11, font.sub = 2)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+####HNF AbLa #####################
+str(Master.T)
+HNFAbLa<-Master.T[31:35]
+#HSFAbLa<-revdf(HSFAbLa)
+rownames(HNFAbLa)<-1535:2017
+PO<-NULL
+PO$series<-c("T1", "T2", "T3", "T4", "T5")
+PO<-data.frame(PO)
+cols<-colnames(HNFAbLa)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(HNFAbLa, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+HNFAbLa
+colnames(HNFAbLa)<-c("T1", "T2", "T3", "T4", "T5")
+write.rwl(HNFAbLa,"/Users/Maxwell/Desktop/HNFAbLa.csv")
+HNFAbLa<-read.rwl("/Users/Maxwell/Desktop/HNFAbLa.csv", header=TRUE)
+
+rwl.report(HNFAbLa)
+RWI_C<-cms(HNFAbLa, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+
+####HSF TSME #####################
+str(Master.T)
+HSFTsMe<-Master.T[7:15]
+#HSFAbLa<-revdf(HSFAbLa)
+rownames(HSFTsMe)<-1535:2017
+PO<-NULL
+PO$series<-c("T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9", "T10")
+PO<-data.frame(PO)
+cols<-colnames(HSFTsMe)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(HSFTsMe, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+HSFTsMe
+colnames(HSFTsMe)<-c("T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9", "T10")
+write.rwl(HSFTsMe,"/Users/Maxwell/Desktop/HSFTsMe.csv")
+HSFTsMe<-read.rwl("/Users/Maxwell/Desktop/HSFTsMe.csv", header=TRUE)
+
+rwl.report(HSFTsMe)
+RWI_C<-cms(HSFTsMe, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+####HSB TSME #####################
+str(Master.T)
+HSBTsMe<-Master.T[16:23]
+#HSFAbLa<-revdf(HSFAbLa)
+rownames(HSBTsMe)<-1535:2017
+PO<-NULL
+PO$series<-c("T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9")
+PO<-data.frame(PO)
+cols<-colnames(HSBTsMe)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(HSBTsMe, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+HSBTsMe
+colnames(HSBTsMe)<-c("T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9")
+write.rwl(HSBTsMe,"/Users/Maxwell/Desktop/HSBTsMe.csv")
+HSBTsMe<-read.rwl("/Users/Maxwell/Desktop/HSBTsMe.csv", header=TRUE)
+
+rwl.report(HSBTsMe)
+RWI_C<-cms(HSBTsMe, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index - Hood South Border", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+####HNF TSME #####################
+str(Master.T)
+HNFTsMe<-Master.T[24:30]
+#HSFAbLa<-revdf(HSFAbLa)
+rownames(HNFTsMe)<-1535:2017
+PO<-NULL
+PO$series<-c("T2", "T4", "T5", "T6", "T8", "T9", "T10")
+PO<-data.frame(PO)
+cols<-colnames(HNFTsMe)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(HNFTsMe, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+HNFTsMe
+colnames(HNFTsMe)<-c("T2", "T4", "T5", "T6", "T8", "T9", "T10")
+write.rwl(HNFTsMe,"/Users/Maxwell/Desktop/HNFTsMe.csv")
+HNFTsMe<-read.rwl("/Users/Maxwell/Desktop/HNFTsMe.csv", header=TRUE)
+
+rwl.report(HNFTsMe)
+RWI_C<-cms(HNFTsMe, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+####HNB TSME #####################
+str(Master.T)
+HNBTsMe<-Master.T[36:45]
+rownames(HNBTsMe)<-1535:2017
+PO<-NULL
+PO$series<-c("T1", "T2","T3", "T4", "T5", "T6","T7", "T8", "T9", "T10")
+PO<-data.frame(PO)
+cols<-colnames(HNBTsMe)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(HNBTsMe, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+HNBTsMe
+colnames(HNBTsMe)<-c("T1", "T2","T3", "T4", "T5", "T6","T7", "T8", "T9", "T10")
+write.rwl(HNBTsMe,"/Users/Maxwell/Desktop/HNBTsMe.csv")
+HNBTsMe<-read.rwl("/Users/Maxwell/Desktop/HNBTsMe.csv", header=TRUE)
+
+rwl.report(HNBTsMe)
+RWI_C<-cms(HNBTsMe, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index Hood North Border", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+
 
 ### Basal Area Increment calculation. DBS's specified by RW length ####
 str(Master.T)

@@ -1,7 +1,8 @@
 library(TTR)
 library(plyr)
+library(ggplot2)
 
-setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Landsat/")
+setwd("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Landsat/")
 
 DNB.NDVI<-read.csv("DNB.csv")
 DNB.NDVI<-ddply(na.omit(DNB.NDVI[DNB.NDVI$NDVI.DNB>0.1,]), .(Year), summarise,
@@ -198,10 +199,23 @@ plot(Diff.HS~Year, NDVI.HS[NDVI.HS$Year>1984,])
 summary(lm(Diff.HS~Year, NDVI.HS[NDVI.HS$Year>1984,]))
 
 Hood<-merge(NDVI.HS,NDVI.HN)
-ggplot(Hood[Hood$Year>1984,], aes(y=Diff.HS, x=Year))+
+ggplot(Hood, aes(y=Diff.HS, x=Year))+
   geom_line()+
   geom_line(aes(y=Diff.HN, x=Year), color="forest green")+
   theme_bw()+ylab("NDVI Treeline/NDVI Forest")+
   theme(legend.position = 'none')
 
 
+ggplot(Hood, aes(y=NDVI.HSF, x=Year))+
+  geom_line()+
+  geom_line(aes(y=NDVI.HSB, x=Year), color="black", linetype="dashed")+
+  geom_line(aes(y=NDVI.HNF, x=Year), color="forest green")+
+  geom_line(aes(y=NDVI.HNB, x=Year), color="forest green", linetype="dashed")+
+  theme_bw()+ylab("NDVI")+
+  theme(legend.position = 'none')
+
+ggplot(Hood, aes(y=NDVI.HSB, x=Year))+
+  geom_line(color="Black", linetype="dashed")+
+  geom_line(aes(y=NDVI.HNB, x=Year), color="Forest Green", linetype="dashed")+
+  theme_bw()+ylab("NDVI")+
+  theme(legend.position = 'none')
