@@ -201,6 +201,85 @@ crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Wi
 title("Ring Width Index Hood North Border", line = 3)
 title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
 
+####TNB AbLa #####################
+TNBAbLa<-read.csv("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/TNBAbLa.csv")
+str(TNBAbLa)
+n<-min(na.omit(TNBAbLa$Year))
+TNBAbLa$Year<-as.numeric(rep(2018:n, each=2))
+library(dplyr)
+TNBAbLa<-TNBAbLa %>%
+  group_by(Year) %>% 
+  summarise_all(funs(sum))
+TNBAbLa<-data.frame(TNBAbLa)
+str(TNBAbLa)
+RWI<-detrend(TNBAbLa,make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
+spag.plot(RWI, zfac = .3)
+rownames(TNBAbLa)<-TNBAbLa$Year
+TNBAbLa<-TNBAbLa[-1]
+PO<-NULL
+PO$series<-c("T1", "T2","T3", "T4", "T5", "T6","T7", "T8", "T9", "T10", "T11")
+PO<-data.frame(PO)
+cols<-colnames(TNBAbLa)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(TNBAbLa, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+TNBAbLa
+colnames(TNBAbLa)<-c("T1", "T2","T3", "T4", "T5", "T6","T7", "T8", "T9", "T10", "T11")
+write.rwl(TNBAbLa,"/Users/Maxwell/Desktop/TNBAbLa.csv")
+TNBAbLa<-read.rwl("/Users/Maxwell/Desktop/TNBAbLa.csv", header=TRUE)
+
+rwl.report(TNBAbLa)
+RWI_C<-cms(TNBAbLa, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index Hood North Border", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+###########   TNFAbLA ##########
+TNFAbLa<-read.csv("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/TNFAbLa.csv")
+str(TNFAbLa)
+n<-min(na.omit(TNFAbLa$Year))
+TNFAbLa$Year<-as.numeric(rep(2018:n, each=2))
+library(dplyr)
+TNFAbLa<-TNFAbLa %>%
+  group_by(Year) %>% 
+  summarise_all(funs(sum))
+TNFAbLa<-data.frame(TNFAbLa)
+str(TNFAbLa)
+RWI<-detrend(TNFAbLa,make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
+spag.plot(RWI, zfac = .3)
+rownames(TNFAbLa)<-TNFAbLa$Year
+TNFAbLa<-TNFAbLa[-1]
+PO<-NULL
+PO$series<-c("T1", "T2","T3", "T4", "T5")
+PO<-data.frame(PO)
+cols<-colnames(TNFAbLa)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(TNFAbLa, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+TNFAbLa
+colnames(TNFAbLa)<-c("T1", "T2","T3", "T4", "T5")
+write.rwl(TNFAbLa,"/Users/Maxwell/Desktop/TNFAbLa.csv")
+TNFAbLa<-read.rwl("/Users/Maxwell/Desktop/TNFAbLa.csv", header=TRUE)
+
+rwl.report(TNFAbLa)
+RWI_C<-cms(TNFAbLa, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index Hood North Border", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
 
 
 ### Basal Area Increment calculation. DBS's specified by RW length ####

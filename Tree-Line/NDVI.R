@@ -54,6 +54,8 @@ ggplot(Drake, aes(y=NDVI.DSF, x=Year))+
   geom_line(aes(y=NDVI.DNB, x=Year), color="forest green", linetype="dashed")+
   theme_bw()+ylab("NDVI")+
   theme(legend.position = 'none')
+
+Drake
 ####Powder NDVI TS
 
 PNB.NDVI<-read.csv("PNB.csv")
@@ -219,3 +221,49 @@ ggplot(Hood, aes(y=NDVI.HSB, x=Year))+
   geom_line(aes(y=NDVI.HNB, x=Year), color="Forest Green", linetype="dashed")+
   theme_bw()+ylab("NDVI")+
   theme(legend.position = 'none')
+
+Drake
+colnames(Drake)<-c("Year", "DSF", "DSB", "DS", "DNF", "DNB", "DN")
+Drake
+Drake.long<-reshape(Drake, 
+                   idvar="Year", ids = "Year",
+                   times=names(Drake[-1]), timevar = "Site",
+                   varying=list(names(Drake[-1])), v.names="NDVI", 
+                   direction = "long")
+
+
+Hood
+colnames(Hood)<-c("Year", "HSF", "HSB", "HS", "HNF", "HNB", "HN")
+Hood.long<-reshape(Hood, 
+                    idvar="Year", ids = "Year",
+                    times=names(Hood[-1]), timevar = "Site",
+                    varying=list(names(Hood[-1])), v.names="NDVI", 
+                    direction = "long")
+Hood.long
+
+Twin
+colnames(Twin)<-c("Year", "TSF", "TSB", "TS", "TNF", "TNB", "TN")
+Twin.long<-reshape(Twin, 
+                   idvar="Year", ids = "Year",
+                   times=names(Twin[-1]), timevar = "Site",
+                   varying=list(names(Twin[-1])), v.names="NDVI", 
+                   direction = "long")
+Twin.long
+
+Picea
+colnames(Picea)<-c("Year", "PSF", "PSB", "PS", "PNF", "PNB", "PN")
+Picea.long<-reshape(Picea, 
+                   idvar="Year", ids = "Year",
+                   times=names(Picea[-1]), timevar = "Site",
+                   varying=list(names(Picea[-1])), v.names="NDVI", 
+                   direction = "long")
+Picea.long
+
+NDVI.long<-rbind(Picea.long, Twin.long, Hood.long, Drake.long)
+
+NDVI.clim<-merge(climate, NDVI.long)
+
+ggplot(NDVI.clim, aes(y=scale(NDVI), x=Year))+geom_line()+facet_wrap(~Site)+
+  geom_line(data=NDVI.clim, aes(y=scale(MAT), x=Year), color="Red")+
+  geom_line(data=NDVI.clim, aes(y=scale(MAP), x=Year), color="Blue")+
+  theme_classic()

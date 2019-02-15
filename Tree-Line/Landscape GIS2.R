@@ -165,3 +165,55 @@ rad2deg(extract(aspect.Hood, Poly[17:20,]))
 twi<-build_chans(atb=dem.hood, drn=NULL, atb.thresh=.95)
 plot(twi[[1]])
 ua<-upslope.area(dem)
+
+str(Poly)
+dem.drake
+drake.dat<-extract(terrain.drake, Poly, fun=mean)
+drake.sd<-extract(terrain.drake, Poly, fun=sd)
+drake.elev<-extract(dem.drake, Poly, fun=mean)
+drake.dat<-cbind(drake.dat, drake.sd, drake.elev)
+rownames(drake.dat)<-Poly$Name
+colnames(drake.dat)<-c("tri", "tpi", "slope", "aspect", "trisd", "tpisd", "slopesd", "aspectsd", "elevation")
+drake.dat<-data.frame(na.omit(drake.dat))
+
+dem.hood
+hood.dat<-extract(terrain.hood, Poly, fun=mean)
+hood.sd<-extract(terrain.hood, Poly, fun=sd)
+hood.elev<-extract(dem.hood, Poly, fun=mean)
+hood.dat<-cbind(hood.dat, hood.sd, hood.elev)
+rownames(hood.dat)<-Poly$Name
+colnames(hood.dat)<-c("tri", "tpi", "slope", "aspect", "trisd", "tpisd", "slopesd", "aspectsd", "elevation")
+hood.dat<-data.frame(na.omit(hood.dat))
+
+dem.elkhorn
+elkhorn.dat<-extract(terrain.elkhorn, Poly, fun=mean)
+elkhorn.sd<-extract(terrain.elkhorn, Poly, fun=sd)
+elkhorn.elev<-extract(dem.elkhorn, Poly, fun=mean)
+elkhorn.dat<-cbind(elkhorn.dat, elkhorn.sd, elkhorn.elev)
+rownames(elkhorn.dat)<-Poly$Name
+colnames(elkhorn.dat)<-c("tri", "tpi", "slope", "aspect", "trisd", "tpisd", "slopesd", "aspectsd", "elevation")
+elkhorn.dat<-data.frame(na.omit(elkhorn.dat))
+
+dem.wallowa
+wallowa.dat<-extract(terrain.wallowa, Poly, fun=mean)
+wallowa.sd<-extract(terrain.wallowa, Poly, fun=sd)
+wallowa.elev<-extract(dem.wallowa, Poly, fun=mean)
+wallowa.dat<-cbind(wallowa.dat, wallowa.sd, wallowa.elev)
+rownames(wallowa.dat)<-Poly$Name
+colnames(wallowa.dat)<-c("tri", "tpi", "slope", "aspect", "trisd", "tpisd", "slopesd", "aspectsd", "elevation")
+wallowa.dat<-data.frame(na.omit(wallowa.dat))
+
+dem.tumalo
+tumalo.dat<-extract(terrain.tumalo, Poly, fun=mean)
+tumalo.sd<-extract(terrain.tumalo, Poly, fun=sd)
+tumalo.elev<-extract(dem.tumalo, Poly, fun=mean)
+tumalo.dat<-cbind(tumalo.dat, tumalo.sd, tumalo.elev)
+rownames(tumalo.dat)<-Poly$Name
+colnames(tumalo.dat)<-c("tri", "tpi", "slope", "aspect", "trisd", "tpisd", "slopesd", "aspectsd", "elevation")
+tumalo.dat<-data.frame(na.omit(tumalo.dat))
+
+Poly$Name
+rbind(tumalo.dat, elkhorn.dat, wallowa.dat, hood.dat, drake.dat)
+
+landscape.dat<-rbind(tumalo.dat, elkhorn.dat, wallowa.dat, hood.dat, drake.dat)
+write.csv(landscape.dat, "/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/landscapeGIS.csv")
