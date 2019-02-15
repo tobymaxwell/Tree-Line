@@ -241,6 +241,15 @@ crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Wi
 title("Ring Width Index Hood North Border", line = 3)
 title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
 
+ggplot(MeanChron, aes(y=scale(IZTstd), x=1616:2018, lwd=3))+geom_line()+
+  geom_line(data=Twin, aes(y=scale(NDVI.TNB), x=Year), color="Green", lwd=3)+
+  #geom_line(data=NDVI.clim[NDVI.clim$Site=="TNB",], aes(y=scale(MAT), x=Year), lwd=2, col="Red")+
+  #geom_line(data=NDVI.clim[NDVI.clim$Site=="TNB",], aes(y=scale(MAP), x=Year), lwd=2, col="Blue")+
+  xlim(1970,2018)+
+  ylab("Standardized NDVI (Green), RWI (Black)")+
+  xlab("")
+
+
 ###########   TNFAbLA ##########
 TNFAbLa<-read.csv("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/TNFAbLa.csv")
 str(TNFAbLa)
@@ -257,7 +266,7 @@ spag.plot(RWI, zfac = .3)
 rownames(TNFAbLa)<-TNFAbLa$Year
 TNFAbLa<-TNFAbLa[-1]
 PO<-NULL
-PO$series<-c("T1", "T2","T3", "T4", "T5")
+PO$series<-c("T1", "T2","T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
 PO<-data.frame(PO)
 cols<-colnames(TNFAbLa)
 lengths<-NULL
@@ -267,7 +276,7 @@ for(i in cols){
 }
 PO$pith.offset<-lengths
 TNFAbLa
-colnames(TNFAbLa)<-c("T1", "T2","T3", "T4", "T5")
+colnames(TNFAbLa)<-c("T1", "T2","T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
 write.rwl(TNFAbLa,"/Users/Maxwell/Desktop/TNFAbLa.csv")
 TNFAbLa<-read.rwl("/Users/Maxwell/Desktop/TNFAbLa.csv", header=TRUE)
 
@@ -281,6 +290,53 @@ crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Wi
 title("Ring Width Index Hood North Border", line = 3)
 title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
 
+###########   TSBAbLA ##########
+TSBAbLa<-read.csv("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/TSBAbLa.csv")
+str(TSBAbLa)
+n<-min(na.omit(TSBAbLa$Year))
+TSBAbLa$Year<-as.numeric(rep(2018:n, each=2))
+library(dplyr)
+TSBAbLa<-TSBAbLa %>%
+  group_by(Year) %>% 
+  summarise_all(funs(sum))
+TSBAbLa<-data.frame(TSBAbLa)
+str(TSBAbLa)
+RWI<-detrend(TSBAbLa,make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
+spag.plot(RWI, zfac = .3)
+rownames(TSBAbLa)<-TSBAbLa$Year
+TSBAbLa<-TSBAbLa[-1]
+PO<-NULL
+PO$series<-c("T1", "T2","T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
+PO<-data.frame(PO)
+cols<-colnames(TSBAbLa)
+lengths<-NULL
+for(i in cols){
+  length<-length(rownames(na.omit(select(TSBAbLa, i)[1])))
+  lengths<-c(lengths, length)
+}
+PO$pith.offset<-lengths
+TSBAbLa
+colnames(TSBAbLa)<-c("T1", "T2","T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
+write.rwl(TSBAbLa,"/Users/Maxwell/Desktop/TSBAbLa.csv")
+TSBAbLa<-read.rwl("/Users/Maxwell/Desktop/TSBAbLa.csv", header=TRUE)
+
+rwl.report(TSBAbLa)
+RWI_C<-cms(TSBAbLa, PO, c.hat.t = FALSE, c.hat.i = FALSE)
+RWI_C
+MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
+MeanChron
+crn.plot(MeanChron, add.spline=TRUE, nyrs=20, f=0.5, xlab="Years", ylab="Ring Width Index", 
+         crn.lwd= 2, spline.lwd = 2, abline.pos = 1)
+title("Ring Width Index Hood North Border", line = 3)
+title(sub = "RWI - AR Model", line = -28.5, font.sub = 2)
+
+ggplot(MeanChron, aes(y=scale(IZTstd), x=1842:2018))+geom_line(lwd=3)+
+ geom_line(data=Twin, aes(y=scale(NDVI.TSB), x=Year), color="Green", lwd=3)+
+ geom_line(data=NDVI.clim[NDVI.clim$Site=="TSB",], aes(y=scale(MAT), x=Year), lwd=2, col="Red")+
+ geom_line(data=NDVI.clim[NDVI.clim$Site=="TSB",], aes(y=scale(MAP), x=Year), lwd=2, col="Blue")+
+  xlim(1970,2018)+
+  ylab("Standardized NDVI (Green), RWI (Black)")+
+  xlab("")
 
 ### Basal Area Increment calculation. DBS's specified by RW length ####
 str(Master.T)

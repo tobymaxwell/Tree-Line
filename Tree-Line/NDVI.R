@@ -262,7 +262,7 @@ Picea.long
 NDVI.long<-rbind(Picea.long, Twin.long, Hood.long, Drake.long)
 
 NDVI.clim<-merge(climate, NDVI.long)
-
+write.csv(NDVI.clim, "/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/NDVI.Clim.csv")
 ggplot(NDVI.clim, aes(y=scale(NDVI), x=Year))+geom_line()+facet_wrap(~Site)+
   geom_line(data=NDVI.clim, aes(y=scale(MAT), x=Year), color="Red")+
   geom_line(data=NDVI.clim, aes(y=scale(MAP), x=Year), color="Blue")+
