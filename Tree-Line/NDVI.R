@@ -2,7 +2,7 @@ library(TTR)
 library(plyr)
 library(ggplot2)
 
-setwd("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Landsat/")
+setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Landsat/")
 
 DNB.NDVI<-read.csv("DNB.csv")
 DNB.NDVI<-ddply(na.omit(DNB.NDVI[DNB.NDVI$NDVI.DNB>0.1,]), .(Year), summarise,
@@ -219,7 +219,7 @@ ggplot(Hood, aes(y=NDVI.HSF, x=Year))+
 ggplot(Hood, aes(y=NDVI.HSB, x=Year))+
   geom_line(color="Black", linetype="dashed")+
   geom_line(aes(y=NDVI.HNB, x=Year), color="Forest Green", linetype="dashed")+
-  theme_bw()+ylab("NDVI")+
+  theme_bw()+ylab("NDVI Treeline/NDVI Forest")+
   theme(legend.position = 'none')
 
 Drake
@@ -262,8 +262,12 @@ Picea.long
 NDVI.long<-rbind(Picea.long, Twin.long, Hood.long, Drake.long)
 
 NDVI.clim<-merge(climate, NDVI.long)
-write.csv(NDVI.clim, "/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/NDVI.Clim.csv")
+NDVI.clim<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/NDVI.Clim.csv")
 ggplot(NDVI.clim, aes(y=scale(NDVI), x=Year))+geom_line()+facet_wrap(~Site)+
   geom_line(data=NDVI.clim, aes(y=scale(MAT), x=Year), color="Red")+
   geom_line(data=NDVI.clim, aes(y=scale(MAP), x=Year), color="Blue")+
   theme_classic()
+
+ddply(NDVI.clim, .(Site), summarise,
+      MAP=mean(MAP),
+      MAT=mean(MAT)/10)

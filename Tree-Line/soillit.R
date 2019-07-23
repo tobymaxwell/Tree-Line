@@ -1,4 +1,4 @@
-setwd("/Users/Maxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/")
+setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/")
 soil<-read.csv("Soil Data.csv")
 CN<-read.csv("CNsoil.csv")
 CNlit<-read.csv("CNlit.csv")
@@ -8,14 +8,39 @@ allsoil<-merge(CN,soil, by=c("Site", "Aspect", "Zone", "Number", "Depth"))
 str(allsoil)
 allsoil$AZ<-paste0(allsoil$Aspect, allsoil$Zone)
 allsoil$C_g_kg<-((allsoil$C.pct/100)*1000)
+allsoil$N_g_kg<-((allsoil$C.pct/100)*1000)
+allsoil$C_bd<-(allsoil$N.pct/100)/allsoil$soilvol
+m1<-lm(C_g_kg~Site*Aspect, allsoil)
+anova(m1)
 #allsoil$Cdens<-C_g_kg
 CNlit$AZ<-paste0(CNlit$Aspect, CNlit$Zone)
 library(ggplot2)
-ggplot(allsoil, aes(y=C.pct, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Carbon (g/kg)")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))
+allsoil.tw<-allsoil[allsoil$Depth=="tw",]
+ggplot(allsoil.tw[allsoil.tw$Site=="H"|allsoil.tw$Site=="T"|allsoil.tw$Site=="P",], aes(y=C.N, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("C:N")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+
+  theme(legend.position="none")+
+  xlab("")
 
-ggplot(allsoil, aes(y=C.N, x=Site, fill=AZ))+geom_boxplot()+theme_bw()+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+ylab("C:N")
+ggplot(allsoil[allsoil$Site=="H"|allsoil$Site=="T"|allsoil$Site=="P",], aes(y=N.pct, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Nitrogen (g/kg)")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+
+  facet_wrap(~Depth)+
+  theme(legend.position="none")+
+  xlab("")
 
-ggplot(CNlit, aes(y=C.N, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Litter C:N")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))
+ggplot(allsoil[allsoil$Site=="H"|allsoil$Site=="T"|allsoil$Site=="P",], aes(y=C_bd, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Carbon (g/cm^3)")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+
+  theme(legend.position="none")+
+  xlab("")
+
+ggplot(allsoil[allsoil$Site=="H"|allsoil$Site=="T"|allsoil$Site=="P",], aes(y=C.N, x=Site, fill=AZ))+geom_boxplot()+theme_bw()+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+ylab("C:N")+
+  facet_wrap(~Depth)+
+  theme(legend.position="none")+
+  xlab("")
+
+ggplot(CNlit[CNlit$Site=="H"|CNlit$Site=="T"|CNlit$Site=="P",], aes(y=C.N, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Litter C:N")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+
+  theme(legend.position="none")+
+  xlab("")
+
+ggplot(CNlit[CNlit$Site=="H"|CNlit$Site=="T"|CNlit$Site=="P",], aes(y=N.pct, x=Site, fill = AZ))+geom_boxplot()+theme_bw()+ylab("Litter N")+scale_fill_manual(values=c("Forest Green", "Green", "Black", "Grey"))+
+  theme(legend.position="none")+
+  xlab("")
 
 mod<-lm(C.N~Site, CN)
 anova(mod)
