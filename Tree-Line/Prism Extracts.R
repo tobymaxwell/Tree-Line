@@ -2,11 +2,14 @@ library(raster)
 library(sp)
 library(rgdal)
 library(rgeos)
-Poly
-sites<-Poly
 
-setwd("/Users/Maxwell/Documents/geospatial/PRISM_tmean_stable_4kmM2_198101_201807_bil/")
-list<-list.files(pattern="bil.bil*")
+##Turn points into polygons
+library("sp")
+library("rgdal")
+library("raster")
+
+setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Prism/")
+list<-list.files(pattern="*bil.bil")
 list
 list<-list[c(TRUE,FALSE)]
 list

@@ -38,3 +38,4 @@ for(i in years){
 }
 
 NDVImax<-data.frame(apply(days, 1, mean))
+

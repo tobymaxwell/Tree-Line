@@ -21,6 +21,19 @@ rownames(RWI)<-Master.T$Year
 spag.plot(RWI[15:22], zfac=.3)
 spag.plot(RWI, zfac=.3)
 rwl.report(RWI[15:22])
+write.csv(RWI, "/Users/tobymaxwell/Desktop/rwi.csv")
+
+age = function(from, to) {
+  from_lt = as.POSIXlt(from)
+  to_lt = as.POSIXlt(to)
+  
+  age = to_lt$year - from_lt$year
+  
+  ifelse(to_lt$mon < from_lt$mon |
+           (to_lt$mon == from_lt$mon & to_lt$mday < from_lt$mday),
+         age - 1, age)
+}
+age("2000", "2018")
 
 ##### Calculate Master RWI using the C-Method (recomended method, see Biondi and Qeadan, 2008) 
 library(graphics)
