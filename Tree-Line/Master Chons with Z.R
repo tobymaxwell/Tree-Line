@@ -286,18 +286,18 @@ for (i in sites[c(-1,-3,-12:-13,-23,-25:-26,-43, -11,-20, -24,-27,-29, -39,-40, 
   result<-rbind(result,slopes)
 }
 colnames(result)<-c("S1", "S2", "S3", "I1", "I2","I3")
-result(as.data.frame(result))
+result<-(as.data.frame(result))
 rownames(result)<-sites[c(-1,-3,-12:-13,-23,-25:-26,-43, -11, -20, -24,-27,-29, -39,-40, -41,-42)]
 rownames(breakyears)<-sites[c(-1,-3,-12:-13,-23,-25:-26,-43, -11, -20, -24,-27,-29, -39,-40, -41,-42)]
 length(result)
 
-slopes<-as.data.frame(result)
-slopes$ID<-rownames(slopes)
-slopes$Site<-substr(slopes$ID,1,1)
-slopes$Aspect<-substr(slopes$ID,2,2)
-slopes$Zone<-substr(slopes$ID,3,3)
-slopes$Species<-substr(slopes$ID,4,7)
-slopes$Change2.3<-slopes$S3-slopes$S2
+slopes.1<-as.data.frame(result)
+slopes.1$ID<-rownames(slopes.1)
+slopes.1$Site<-substr(slopes.1$ID,1,1)
+slopes.1$Aspect<-substr(slopes.1$ID,2,2)
+slopes.1$Zone<-substr(slopes.1$ID,3,3)
+slopes.1$Species<-substr(slopes.1$ID,4,7)
+slopes.1$Change2.3<-slopes.1$S3-slopes.1$S2
 
 breakyears<-as.data.frame(breakyears)
 breakyears$ID<-rownames(breakyears)
@@ -314,12 +314,12 @@ rwi.minyear<-merge(rwi.minyear, breakyears)
 rwi.minyear
 rwi.minyear$xmax<-2018
 
-rwi.minyear$Y1<-rwi.minyear$xmin*slopes$S1+slopes$I1
-rwi.minyear$Y2<-rwi.minyear$B1*slopes$S1+slopes$I1
-rwi.minyear$Y3<-rwi.minyear$B1*slopes$S2+slopes$I2
-rwi.minyear$Y4<-rwi.minyear$B2*slopes$S2+slopes$I2
-rwi.minyear$Y5<-rwi.minyear$B2*slopes$S3+slopes$I3
-rwi.minyear$Y6<-rwi.minyear$xmax*slopes$S3+slopes$I3
+rwi.minyear$Y1<-rwi.minyear$xmin*slopes.1$S1+slopes.1$I1
+rwi.minyear$Y2<-rwi.minyear$B1*slopes.1$S1+slopes.1$I1
+rwi.minyear$Y3<-rwi.minyear$B1*slopes.1$S2+slopes.1$I2
+rwi.minyear$Y4<-rwi.minyear$B2*slopes.1$S2+slopes.1$I2
+rwi.minyear$Y5<-rwi.minyear$B2*slopes.1$S3+slopes.1$I3
+rwi.minyear$Y6<-rwi.minyear$xmax*slopes.1$S3+slopes.1$I3
 rwi.minyear
 
 
@@ -392,11 +392,11 @@ coefs$Aspect<-substr(coefs$ID,2,2)
 coefs$Zone<-substr(coefs$ID,3,3)
 coefs$Species<-substr(coefs$ID,4,7)
 
-ggplot(rwi.long[rwi.long$Species=="PiAl",], aes(rwi, x=Year, color=Zone))+
-  geom_line()+facet_grid(Site~Aspect, scales='free')+
-  geom_vline(aes(xintercept=B1, color=Zone), breakyears[breakyears$Species=="PiAl",])+
-  geom_vline(aes(xintercept=B2, color=Zone), breakyears[breakyears$Species=="PiAl",])+
-  geom_vline(aes(xintercept=B1, color=Zone), breakyear[breakyear$Species=="PiAl",])+
+ggplot(rwi.long[rwi.long$Species=="PiAl",], aes(rwi, x=Year, color=Aspect))+
+  geom_line()+facet_grid(Site~Zone, scales='free')+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyears[breakyears$Species=="PiAl",])+
+  geom_vline(aes(xintercept=B2, color=Aspect), breakyears[breakyears$Species=="PiAl",])+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyear[breakyear$Species=="PiAl",])+
   geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2),color='Black',rwi.minyear[rwi.minyear$Species=="PiAl",])+
   geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4),color='Black', rwi.minyear[rwi.minyear$Species=="PiAl",])+
   geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6),color='Black',rwi.minyear[rwi.minyear$Species=="PiAl",])+
@@ -405,33 +405,34 @@ ggplot(rwi.long[rwi.long$Species=="PiAl",], aes(rwi, x=Year, color=Zone))+
 
 
 
-ggplot(rwi.long[rwi.long$Species=="AbLa",], aes(rwi, x=Year, color=Zone))+
-  geom_line()+facet_grid(Site~Aspect, scales='free')+
-  geom_vline(aes(xintercept=B1, color=Zone), breakyears[breakyears$Species=="AbLa",])+
-  geom_vline(aes(xintercept=B2, color=Zone), breakyears[breakyears$Species=="AbLa",])+
-  geom_vline(aes(xintercept=B1, color=Zone), breakyear[breakyear$Species=="AbLa",])+
+ggplot(rwi.long[rwi.long$Species=="AbLa",], aes(rwi, x=Year, color=Aspect))+
+  geom_line()+facet_grid(Site~Zone, scales='free')+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyears[breakyears$Species=="AbLa",])+
+  geom_vline(aes(xintercept=B2, color=Aspect), breakyears[breakyears$Species=="AbLa",])+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyear[breakyear$Species=="AbLa",])+
   geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2),color='Black',rwi.minyear[rwi.minyear$Species=="AbLa",])+
   geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4),color='Black', rwi.minyear[rwi.minyear$Species=="AbLa",])+
   geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6),color='Black',rwi.minyear[rwi.minyear$Species=="AbLa",])+
   geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2),color='Black',rwi.minyear.2[rwi.minyear.2$Species=="AbLa",])+
   geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4),color='Black',rwi.minyear.2[rwi.minyear.2$Species=="AbLa",])+xlim(1801,2018)
 
-ggplot(rwi.long[rwi.long$Species=="TsMe",], aes(rwi, x=Year, color=Zone))+
-  geom_line()+facet_grid(Site~Aspect, scales='free')+
-  geom_vline(aes(xintercept=B1, color=Zone), breakyears[breakyears$Species=="TsMe",])+
-  geom_vline(aes(xintercept=B2, color=Zone), breakyears[breakyears$Species=="TsMe",])+
-  geom_vline(aes(xintercept=B1),color='red', breakyear[breakyear$Species=="TsMe",])+
-  geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2), rwi.minyear[rwi.minyear$Species=="TsMe",])+
-  geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4), rwi.minyear[rwi.minyear$Species=="TsMe",])+
-  geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6), rwi.minyear[rwi.minyear$Species=="TsMe",])+
-  geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2), rwi.minyear.2[rwi.minyear.2$Species=="TsMe",])+
-  geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4), rwi.minyear.2[rwi.minyear.2$Species=="TsMe",])+theme_bw()
+ggplot(rwi.long[rwi.long$Species=="TsMe",], aes(rwi, x=Year, color=Aspect))+
+  geom_line()+facet_grid(Site~Zone, scales='free')+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyears[breakyears$Species=="TsMe",])+
+  geom_vline(aes(xintercept=B2, color=Aspect), breakyears[breakyears$Species=="TsMe",])+
+  geom_vline(aes(xintercept=B1, color=Aspect), breakyear[breakyear$Species=="TsMe",])+
+  geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2), color='black', rwi.minyear[rwi.minyear$Species=="TsMe",])+
+  geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4),   color='black',rwi.minyear[rwi.minyear$Species=="TsMe",])+
+  geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6), color='black',rwi.minyear[rwi.minyear$Species=="TsMe",])+
+  geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2), color='black',rwi.minyear.2[rwi.minyear.2$Species=="TsMe",])+
+  geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4), color='black',rwi.minyear.2[rwi.minyear.2$Species=="TsMe",])+theme_bw()+xlim(1801,2018)
 
-modslopes<-c(slopes$S3, slopes.2$S2)
+modslopes<-c(slopes.1$S3, slopes.2$S2)
 modslopes<-as.data.frame(modslopes)
-modslopes$ID<-c(slopes$ID, slopes.2$ID)
+modslopes$ID<-c(slopes.1$ID, slopes.2$ID)
 modslopes$Site<-substr(modslopes$ID, 1,1)
 modslopes$Aspect<-substr(modslopes$ID,2,2)
+modslopes$Zone<-substr(modslopes$ID,3,3)
 clim.norms<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/clim.norms.csv")
 clim.norms<-clim.norms%>%
   group_by(Site, Aspect)%>%
