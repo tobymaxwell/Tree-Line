@@ -204,8 +204,8 @@ climhist.yr<-climhist%>%
   group_by(Site, Aspect, Year)%>%
   summarise(MAP=sum(MAP), MAT=mean(MAT), tmin=mean(tmin), tmax=mean(tmax))
 climhist.yr<-as.data.frame(climhist.yr)
-climhist.yr
-#write.csv(climhist.yr, "/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.yr.csv")
+str(climhist.yr)
+write.csv(climhist.yr, "/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.yr.csv")
 
 library(wesanderson)
 ggplot(rwi.long, aes(scale(rwi),x=Year, color=Species))+

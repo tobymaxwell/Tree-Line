@@ -1,4 +1,4 @@
-#BAI All
+#RWI All
 setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/Final Chrons/")
 files<-list.files()
 
@@ -66,10 +66,11 @@ rwi.long$Zone<-substr(rwi.long$ID, 3,3)
 rwi.long$Species<-substr(rwi.long$ID, 4,7)
 str(rwi.long)
 
+library(wesanderson)
 ggplot(rwi.long[rwi.long$Species=="AbLa",], aes(rwi,x=Year, color=Species))+
   geom_line()+
   stat_smooth(span=0.2)+
-  facet_grid(Aspect~Site, scales="free")+
+  facet_grid(Aspect~Site)+
   scale_color_manual(values=wes_palette(name="GrandBudapest1"))+
   theme_bw()+xlim(1895,2018)
 
@@ -196,7 +197,7 @@ NDVI.ag<-as.data.frame(NDVI.ag)
 NDVI.ag
 ####masterplot#####
 library(dplyr)
-climhist<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.csv")
+climhist<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.csv")[-1]
 str(climhist)
 climhist.yr<-climhist%>%
   group_by(Site, Aspect, Year)%>%
@@ -259,7 +260,7 @@ library(TTR)
 library(bfast)
 
 ts.slopes<-function(ts){
-  breaks<-bfast(ts, season = "none", max.iter=2,breaks=2)
+  breaks<-bfast(ts, season = "none", max.iter=2,breaks=3)
   niter <- length(breaks$output)
   slopes<-coef(breaks$output[[niter]]$bp.Vt)[,2]
   intercepts<-coef(breaks$output[[niter]]$bp.Vt)[,1]
@@ -267,6 +268,16 @@ ts.slopes<-function(ts){
   nm <-deparse(substitute(ts))
   return(c(slopes, intercepts, plot(breaks, type="trend", main = paste(nm))))
 }
+######all data breaks
+d<-na.omit(rwi.long)%>%
+  group_by(Year, Species)%>%
+  summarize(rwi=mean(rwi))
+d<-as.data.frame(d[d$Year>1839,])
+ts.d<-ts(d$rwi, start=min(d$Year))
+slopes<-ts.slopes(ts.d)
+print(slopes)
+
+######
 
 sites<-levels(as.factor(rwi.long$ID))
 slopes<-NULL
@@ -392,8 +403,17 @@ coefs$Aspect<-substr(coefs$ID,2,2)
 coefs$Zone<-substr(coefs$ID,3,3)
 coefs$Species<-substr(coefs$ID,4,7)
 
+ggplot(data=rwi.minyear, aes(x=xmin, xend=B1, y=Y1, yend=Y2))+geom_segment()+
+  geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4),color='Black', rwi.minyear)+
+  geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6),color='Black',rwi.minyear)+
+  geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2),color='Black',rwi.minyear.2)+
+  geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4),color='Black',rwi.minyear.2)+
+  geom_abline(data=coefs[coefs$Species=="PiAl",], aes(slope=Year, intercept=int))+
+  ylim(0,3)
+
+
 ggplot(rwi.long[rwi.long$Species=="PiAl",], aes(rwi, x=Year, color=Aspect))+
-  geom_line()+facet_grid(Site~Zone, scales='free')+
+  geom_line()+
   geom_vline(aes(xintercept=B1, color=Aspect), breakyears[breakyears$Species=="PiAl",])+
   geom_vline(aes(xintercept=B2, color=Aspect), breakyears[breakyears$Species=="PiAl",])+
   geom_vline(aes(xintercept=B1, color=Aspect), breakyear[breakyear$Species=="PiAl",])+
@@ -401,7 +421,9 @@ ggplot(rwi.long[rwi.long$Species=="PiAl",], aes(rwi, x=Year, color=Aspect))+
   geom_segment(aes(x=B1, xend=B2, y=Y3, yend=Y4),color='Black', rwi.minyear[rwi.minyear$Species=="PiAl",])+
   geom_segment(aes(x=B2, xend=xmax, y=Y5, yend=Y6),color='Black',rwi.minyear[rwi.minyear$Species=="PiAl",])+
   geom_segment(aes(x=xmin, xend=B1, y=Y1, yend=Y2),color='Black',rwi.minyear.2[rwi.minyear.2$Species=="PiAl",])+
-  geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4),color='Black',rwi.minyear.2[rwi.minyear.2$Species=="PiAl",])+xlim(1801,2018)
+  geom_segment(aes(x=B1, xend=xmax, y=Y3, yend=Y4),color='Black',rwi.minyear.2[rwi.minyear.2$Species=="PiAl",])+xlim(1801,2018)+
+  geom_abline(data=coefs[coefs$Species=="PiAl",], aes(slope=Year, intercept=int))+
+  facet_grid(Site~Zone, scales='free')
 
 
 
@@ -433,28 +455,200 @@ modslopes$ID<-c(slopes.1$ID, slopes.2$ID)
 modslopes$Site<-substr(modslopes$ID, 1,1)
 modslopes$Aspect<-substr(modslopes$ID,2,2)
 modslopes$Zone<-substr(modslopes$ID,3,3)
+
 clim.norms<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/clim.norms.csv")
 clim.norms<-clim.norms%>%
-  group_by(Site, Aspect)%>%
+  group_by(Site, Aspect, Zone)%>%
   summarize(mat=mean(mat), ppt=mean(ppt), tmin=mean(tmin), tmax=mean(tmax), vpdmax=mean(vpdmax))
 clim.norms<-as.data.frame(clim.norms)
-slopeclim<-merge(modslopes, clim.norms)
 str(gps.trees)
+gps.trees<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/gps.trees.csv")
 gis.SA<-gps.trees%>%
-  group_by(Site, Aspect)%>%
+  group_by(Site, Aspect, Zone, Species)%>%
   summarize(tri=mean(tri), tpi=mean(tpi), slope=mean(slope), curv=mean(curv))
-slopeclim.g<-merge(slopeclim, gis.SA, by=c("Site", "Aspect"))
-str(allsoil)
-allsoil.SA<-na.omit(allsoil)%>%
-  group_by(Site, Aspect)%>%
-  summarize(Sand=mean(Sand), Silt=mean(Silt), Clay=mean(Clay), C.N=mean(C.N), C.pct=mean(C.pct))
-slopeclim.gs<-merge(slopeclim.g,allsoil.SA)
-
+climtop<-merge(clim.norms, gis.SA, by=c("Site", "Aspect", "Zone"))
+str(soillit)
+data.frame(gis.SA)
+allsoil.SA<-na.omit(soillit)%>%
+  group_by(Site, Aspect, Zone)%>%
+  summarize(Sand=mean(Sand), Silt=mean(Silt), Clay=mean(Clay), C.N=mean(C.N), C.pct=mean(C.pct),C.N.L=mean(C.N.L))
+climtopsoil<-merge(climtop,allsoil.SA)
 str(leafdat)
+leafdat.cut<-leafdat%>%
+  group_by(Site, Aspect, Zone, Species)%>%
+  summarize(DBH=mean(DBH), SLA=mean(SLA), latitude=mean(latitude))
+data.frame(leafdat.cut)
+
+Slopedata<-merge(climtopsoil, leafdat.cut, all=T)
+str(Slopedata)
 
 
-cor(slopeclim.gs[c(-1:-2,-4)])[1,]
 
-plot(modslopes~mat, slopeclim.gs)
+#####Allsites breaks defined by master chron#####
 
-summary(lm(modslopes~mat+C.pct+curv, slopeclim.gs))
+ts.slopes<-function(ts){
+  breaks<-bfast(ts, season = "none", max.iter=3,breaks=2)
+  niter <- length(breaks$output)
+  slopes<-coef(breaks$output[[niter]]$bp.Vt)[,2]
+  intercepts<-coef(breaks$output[[niter]]$bp.Vt)[,1]
+  ci<-(breaks$output[[niter]]$ci.Vt)
+  nm <-deparse(substitute(ts))
+  return(c(slopes, intercepts, plot(breaks, type="trend", main = paste(nm))))
+}
+######all data breaks
+d<-na.omit(rwi.long)%>%
+  group_by(Year)%>%
+  summarize(rwi=mean(rwi))
+d<-as.data.frame(d[d$Year>1836,])
+ts.d<-ts(d$rwi, start=min(d$Year))
+slopes<-ts.slopes(ts.d)
+print(slopes)
+
+ggplot(rwi.long, aes(y=log(rwi), x=Year))+geom_point()+ylim(0,4)
+#####1948-2018#####
+coefs<-NULL
+res<-NULL
+sites<-levels(factor(rwi.long$ID))
+for(i in sites){
+  res<-summary(lm(rwi~Year, rwi.long[is.finite(rwi.long$rwi)&rwi.long$Year>1948&rwi.long$ID==i,]))
+  coefs<-rbind(coefs,res$coefficients[-5:-6])
+  
+}
+colnames(coefs)<-c("int", "Year", "seint", "seyear", "pint", "pyear")
+coefs.1948<-as.data.frame(coefs)
+coefs.1948$ID<-sites
+coefs.1948$sig.05<-ifelse(coefs.1948$pyear<0.05, yes=1, no=0)
+coefs.1948$dir<-ifelse(coefs.1948$Year>0, yes=1, no=-1)
+coefs.1948$Site<-substr(coefs.1948$ID,1,1)
+coefs.1948$Aspect<-substr(coefs.1948$ID,2,2)
+coefs.1948$Zone<-substr(coefs.1948$ID,3,3)
+coefs.1948$Species<-substr(coefs.1948$ID,4,7)
+coefs.1948[coefs.1948$sig.05==1&coefs.1948$dir==-1,]
+length(coefs.1948[coefs.1948$dir==1&coefs.1948$sig.05==1,]$dir)
+
+coefs.1948$ParentMaterial<-NA
+coefs.1948[coefs.1948$Site=='H'|coefs.1948$Site=='Y',]$ParentMaterial<-'Basalt'
+coefs.1948[coefs.1948$Site=='E'|coefs.1948$Site=='T',]$ParentMaterial<-'MetaSedimentary'
+coefs.1948[coefs.1948$Site=='M'|coefs.1948$Site=='P',]$ParentMaterial<-'Granite'
+coefs.1948[coefs.1948$Site=='D',]$ParentMaterial<-'Mixed Volvanics'
+coefs.1948.dat<-merge(coefs.1948[coefs.1948$sig.05==1,], Slopedata, by=c("Site", "Aspect", "Zone", 'Species'))
+ggplot(rwi.long, aes(rwi, x=Year))+geom_blank()+
+  geom_abline(data=coefs.1948.dat, aes(slope=Year, intercept=int, color=factor(dir)))+
+  geom_abline(data=coefs.1948[coefs.1948$sig.05==0,],color='grey', size=.5, aes(slope=Year, intercept=int))+
+  xlim(1948,2018)+ylim(0,3)+theme_bw()
+
+summary(lm(Year~C.N.L+C.pct, coefs.1948.dat))
+#pctc, C.N.L
+str(rwi.long)
+library(corrplot)
+str(coefs.1948.dat)
+M<-cor(na.omit(coefs.1948.dat[c(-1:-4,-11:-14, -30)]))
+res1 <- cor.mtest(na.omit(coefs.1948.dat[c(-1:-4,-11:-14, -30)], conf.level = .90))
+
+corrplot(M, method="color", sig.level = 0.1,  
+         type="upper",
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         p.mat = res1, 
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE 
+)
+
+
+coefs<-NULL
+res<-NULL
+for(i in sites){
+  res<-summary(lm(rwi~Year, rwi.long[is.finite(rwi.long$rwi)&rwi.long$Year<1949&rwi.long$Year>1890&rwi.long$ID==i,]))
+  coefs<-rbind(coefs,res$coefficients[-5:-6])
+  
+}
+colnames(coefs)<-c("int", "Year", "seint", "seyear", "pint", "pyear")
+coefs.1890<-as.data.frame(coefs)
+coefs.1890$ID<-sites
+coefs.1890$sig.05<-ifelse(coefs.1890$pyear<0.05, yes=1, no=0)
+coefs.1890$dir<-ifelse(coefs.1890$Year>0, yes=1, no=-1)
+coefs.1890$Site<-substr(coefs.1890$ID,1,1)
+coefs.1890$Aspect<-substr(coefs.1890$ID,2,2)
+coefs.1890$Zone<-substr(coefs.1890$ID,3,3)
+coefs.1890$Species<-substr(coefs.1890$ID,4,7)
+length(coefs.1890[coefs.1890$sig.05==1&coefs.1890$dir==-1,]$Year)
+
+coefs.1890$ParentMaterial<-NA
+coefs.1890[coefs.1890$Site=='H'|coefs.1890$Site=='Y',]$ParentMaterial<-'Basalt'
+coefs.1890[coefs.1890$Site=='E'|coefs.1890$Site=='T',]$ParentMaterial<-'MetaSedimentary'
+coefs.1890[coefs.1890$Site=='M'|coefs.1890$Site=='P',]$ParentMaterial<-'Granite'
+coefs.1890[coefs.1890$Site=='D',]$ParentMaterial<-'Mixed Volcanics'
+coefs.1890.dat<-merge(coefs.1890[coefs.1890$sig.05==1,], Slopedata, by=c("Site", "Aspect", "Zone", 'Species'))
+ggplot(rwi.long, aes(rwi, x=Year))+geom_blank()+
+  geom_abline(data=coefs.1890.dat, aes(slope=Year, intercept=int, color=factor(dir)))+
+  geom_abline(data=coefs.1890[coefs.1890$sig.05==0,], color='grey', aes(slope=Year, intercept=int))+
+  xlim(1890,1948)+ylim(0,3)+theme_bw()
+
+anova(lm(Year~tmax+tmax:Species, coefs.1890.dat))
+
+
+str(coefs.1890.dat)
+
+M<-cor(coefs.1890.dat[c(-1:-4,-7:-14, -30)])
+res1 <- cor.mtest(coefs.1890.dat[c(-1:-4,-7:-14, -30)], conf.level = .90)
+
+corrplot(M, method="color", sig.level = 0.1,  
+         type="upper",
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         p.mat = res1, 
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE 
+)
+
+#########
+
+coefs<-NULL
+res<-NULL
+sites.1840<-levels(as.factor(rwi.long[is.finite(rwi.long$rwi)&rwi.long$Year>1836&rwi.long$Year<1891,]$ID))
+for(i in sites.1840){
+  res<-summary(lm(rwi~Year, rwi.long[is.finite(rwi.long$rwi)&rwi.long$Year>1836&rwi.long$Year<1891&rwi.long$ID==i,]))
+  coefs<-rbind(coefs,res$coefficients[-5:-6])
+  
+}
+colnames(coefs)<-c("int", "Year", "seint", "seyear", "pint", "pyear")
+coefs.1840<-as.data.frame(coefs)
+coefs.1840$ID<-sites.1840
+coefs.1840$sig.05<-ifelse(coefs.1840$pyear<0.05, yes=1, no=0)
+coefs.1840$dir<-ifelse(coefs.1840$Year>0, yes=1, no=-1)
+coefs.1840$Site<-substr(coefs.1840$ID,1,1)
+coefs.1840$Aspect<-substr(coefs.1840$ID,2,2)
+coefs.1840$Zone<-substr(coefs.1840$ID,3,3)
+coefs.1840$Species<-substr(coefs.1840$ID,4,7)
+length(coefs.1840[coefs.1840$sig.05==1&coefs.1840$dir==-1,]$Year)
+
+
+coefs.1840$ParentMaterial<-NA
+coefs.1840[coefs.1840$Site=='H'|coefs.1840$Site=='Y',]$ParentMaterial<-'Basalt'
+coefs.1840[coefs.1840$Site=='E'|coefs.1840$Site=='T',]$ParentMaterial<-'MetaSedimentary'
+coefs.1840[coefs.1840$Site=='M'|coefs.1840$Site=='P',]$ParentMaterial<-'Granite'
+coefs.1840[coefs.1840$Site=='D',]$ParentMaterial<-'Mixed Volcanics'
+coefs.1840.dat<-merge(coefs.1840[coefs.1840$sig.05==1,], Slopedata, by=c("Site", "Aspect", "Zone", 'Species'))
+ggplot(rwi.long, aes(rwi, x=Year))+geom_blank()+
+  geom_abline(data=coefs.1840.dat, aes(slope=Year, intercept=int, color=factor(dir)))+
+  geom_abline(data=coefs.1840[coefs.1840$sig.05==0,], color='grey', aes(slope=Year, intercept=int))+
+  xlim(1840,1890)+ylim(0,3)+theme_bw()
+
+summary(lm(Year~ParentMaterial, coefs.1840.dat))
+
+str(coefs.1840.dat)
+
+M<-cor(coefs.1840.dat[c(-1:-4,-7:-14, -30)])
+res1 <- cor.mtest(coefs.1840.dat[c(-1:-4,-7:-14, -30)], conf.level = .90)
+
+corrplot(M, method="color", sig.level = 0.1,  
+         type="upper",
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         # Combine with significance
+         p.mat = res1, 
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE 
+)

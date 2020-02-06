@@ -19,6 +19,7 @@ leafdat$SLA<-leafdat$wt/leafdat$HSA
 str(leafdat)
 anova(lm(SLA~Aspect*Site*Zone, leafdat))
 summary(lm(SLA~Site*Zone+Species*PM, leafdat))
+write.csv(leafdat, "/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/leafdat.csv")
 
 library(ggplot2)
 library(wesanderson)

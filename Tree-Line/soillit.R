@@ -128,3 +128,5 @@ clay<-lmer(Clay~PM+Zone+mat+(1|Site), allsoil)
 silt<-lmer(Silt~Zone+Aspect+mat+(1|Site), allsoil)
 sand<-lmer(Sand~Zone+Aspect+mat+(1|Site), allsoil)
 sjt.lmer(clay, silt, sand, p.kr=F)
+
+write.csv(soillit, "/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/soillit.csv")

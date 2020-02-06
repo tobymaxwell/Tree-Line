@@ -2,79 +2,23 @@
 
 library(treeclim)
 library(ggplot2)
-
+library(dplyr)
+library(tidyr)
+bai.long<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/bai.long.csv")[-1]
+bai.spgl<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/bai.spgl.csv")[-1]
+climhist<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.csv")[-1]
 
 #BAI All
-setwd("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/Rings/Master Chrons/")
-files<-list.files()
 
-files
-library(plyr)
-library(dplyr)
-library(sjPlot)
-library(tidyr)
-mergedrings<-ldply(files, read.csv)
-str(mergedrings)
-
-##########################all rings RWI ###########################
-library(dplyr)
-library(dplR)
-PO<-NULL
-temp<-NULL
-rwi.all<-NULL
-allchrons<-NULL
-rwi.all$Year<-1535:2018
-rwi.all<-as.data.frame(rwi.all)
-rownames(rwi.all)<-rwi.all$Year
-for(i in files){
-  temp<-read.csv(i)
-  n<-(length(temp[,1])/2)-1
-  temp$Year<-as.numeric(rep(2018:(2018-n), each=2))
-  
-  temp<-temp %>%
-    group_by(Year) %>% 
-    summarise_all(funs(sum))
-  temp<-data.frame(temp)
-  
-  RWI<-detrend(temp,make.plot=TRUE,method=("Spline"),nyrs=NULL, verbose=TRUE)
-  rownames(temp)<-temp$Year
-  temp<-temp[-1]
-  PO<-NULL
-  PO$series<-rep(paste0("T",1:length(colnames(temp))))
-  PO<-data.frame(PO)
-  cols<-colnames(temp)
-  lengths<-NULL
-  for(j in cols){
-    length<-length(rownames(na.omit(select(temp, j)[1])))
-    lengths<-c(lengths, length)
-  }
-  PO$pith.offset<-lengths
-  temp
-  colnames(temp)<-PO$series
-  write.rwl(temp, paste0("/Users/tobymaxwell/Desktop/",i))
-  temp<-read.rwl(paste0("/Users/tobymaxwell/Desktop/",i), header=TRUE)
-  RWI_C<-cms(temp, PO, c.hat.t = FALSE, c.hat.i = FALSE)
-  colnames(RWI_C)<-cols
-  MeanChron<-chron(RWI_C, prefix = "IZT", biweight = TRUE, prewhiten = TRUE)
-  MeanChron<-data.frame(MeanChron$IZTstd, rownames(MeanChron))
-  colnames(MeanChron)<-c(paste0("rwi",i), "Year")
-  rwi.all<-merge(rwi.all, MeanChron, all=T)
-  
-}
-colnames(rwi.all)<-c("Year",substr(files, 1,6))
-str(rwi.all)
-rwi.long<-gather(rwi.all, key="ID", value = "rwi", DNPiAl:YSTsMe)
-
-rwi.long$Site<-substr(rwi.long$ID, 0,1)
-rwi.long$Aspect<-substr(rwi.long$ID, 2,2)
-rwi.long$Species<-substr(rwi.long$ID, 3,6)
-str(rwi.long)
+bai.long$ID<-substr(bai.long$ID,1,3)
+bai.tree<-bai.long%>%
+  group_by(ID, Species, Year)%>%
+  summarize(bai=mean(bai))
+bai.tree<-as.data.frame(bai.tree)
+bai.tree
 
 
 
-climhist<-read.csv("/Users/tobymaxwell/OneDrive - University Of Oregon/Oregon/Nat Geo/Data/climhist.csv")[-1]
-str(climhist)
-str(na.omit(climhist))
 climseas<-climhist
 climseas$Season<-NULL
 climseas$Season[climseas$Month==10|climseas$Month==11|climseas$Month==12]<-"Fall"
@@ -82,14 +26,48 @@ climseas$Season[climseas$Month==1|climseas$Month==2|climseas$Month==3]<-"Winter"
 climseas$Season[climseas$Month==4|climseas$Month==5|climseas$Month==6]<-"Spring"
 climseas$Season[climseas$Month==7|climseas$Month==8|climseas$Month==9]<-"Summer"
 str(climseas)
+
+coefvar<-function(x){(sd(x)/mean(x))}
+
+tail(climseas)
 climseas.mean<-climseas%>%
-  group_by(Site, Aspect, Year, Season)%>%
-  summarise(ppt=sum(MAP), tmean=mean(MAT), tmin=mean(tmin), tmax=mean(tmax))
+  group_by(Site, Aspect, Zone, Year)%>%
+  summarise(cvppt=coefvar(ppt),ppt=sum(ppt), tmean=mean(tmean), tmin=min(tmin), tmax=max(tmax), vpdmax=max(vpdmax))
+
+climseas.mean<-climseas.mean%>%
+  rename(ppt.yr=ppt, tmean.yr=tmean, tmin.yr=tmin, tmax.yr=tmax, vpdmax.yr=vpdmax)
+
 climseas.mean<-as.data.frame(climseas.mean)
+climseas.mean$ppt.lag1<-lag(climseas.mean$ppt.yr, 1)
+climseas.mean$ppt.lag2<-lag(climseas.mean$ppt.yr, 2)
+climseas.mean$ppt.lag3<-lag(climseas.mean$ppt.yr, 3)
+climseas.mean<-climseas.mean[climseas.mean$Year>1897,]
+
+ggplot(climseas.mean, aes(cvppt, x=Site,fill=Aspect))+geom_boxplot()
+         
+climseas<-climseas%>%
+  group_by(Site, Aspect, Zone, Year, Season)%>%
+  summarise(ppt=sum(ppt), tmean=mean(tmean), tmin=min(tmin), tmax=max(tmax), vpdmax=max(vpdmax))
+climseas<-as.data.frame(climseas)
+tail(climseas)
+
+climseas<-climseas %>% 
+  gather("climate", "ID", ppt:vpdmax) %>%
+  unite( "climseas", Season:climate)%>%
+  spread(climseas, ID)
+
+tail(climseas)
 str(climseas.mean)
-ggplot(climseas.mean[climseas.mean$Season=="Winter",], aes(ppt, x=Year,color=Aspect))+geom_line()+stat_smooth(span=.4)+facet_wrap(~Site, scales='free')
+str(bai.spgl)
+str(climseas)
+bai.clim<-merge(bai.spgl, climseas, by=c("Year", "Site", "Aspect", "Zone"))
+bai.clim<-merge(bai.clim, climseas.mean, by=c("Year", "Site", "Aspect", "Zone"))
+str(bai.clim)
+max(bai.clim$Year)
 
+summary(lm(lnbai~ppt.lag3, bai.clim))
 
+cor()
 library(treeclim)
 
 
@@ -97,12 +75,11 @@ str(climhist)
 cordat.month<-c("SEP", "AUG", "JUL", "JUN", "MAY", "APR", "MAR", "FEB", "JAN", "Dec.prev", "Nov.prev", "Oct.prev", "Sep.prev", "Aug.prev" )
 
 
-climhist <- climhist[order(climhist[3]),]
-rwi.prism<-rwi.long[rwi.long$Year>1894&rwi.long$Year<2015,]
-rwi.prism.abla<-rwi.prism[rwi.prism$Species=="AbLa",]
-rwi.prism.abla$SA<-paste0(rwi.prism.abla$Site, rwi.prism.abla$Aspect)
-Sites<-levels(as.factor(rwi.prism.abla$SA))
-climhist$SA<-paste0(climhist$Site, climhist$Aspect)
+climhist <- climhist[order(climhist[2]),]
+str(climhist)
+bai.prism<-bai.tree[bai.tree$Year>1894&bai.tree$Year<2015,]
+bai.prism.abla<-bai.prism[bai.prism$Species=="AbLa",]
+Sites<-levels(as.factor(bai.prism.abla$ID))
 
 clim<-NULL
 tmean<-NULL
@@ -112,13 +89,15 @@ ppt.all<-NULL
 tmean.all<-as.data.frame(NULL)
 
 for(i in Sites){
-rwi<-rwi.prism.abla[rwi.prism.abla$SA==i,]$rwi
-rwi.abla<-as.data.frame(rwi)
-rownames(rwi.abla)<-1895:2014
+bai<-bai.prism.abla[bai.prism.abla$ID==i,]$bai
+bai.abla<-as.data.frame(bai)
+n<-2014-length(bai)+1
+rownames(bai.abla)<-n:2014
 
-clim<-climhist[climhist$SA==i,][3:8][-5:-6]
+clim<-climhist[climhist$ID==i,][c(1,2,9,10)]
 
-cordat<-seascorr(rwi.abla, clim, season_lengths = 3)
+cordat<-seascorr(bai.abla, clim, season_lengths = c(1:12))
+plot(cordat)
 
 ppt<-cordat$coef[[1]]$primary
 ppt$month<-cordat.month
@@ -137,6 +116,43 @@ ppt.all<-rbind(ppt.all, ppt)
 tmean.all<-rbind(tmean.all, tmean)
 
   }
+}
+
+
+clim<-NULL
+tmin<-NULL
+tmax<-NULL
+cordat<-NULL
+tmin.all<-NULL
+tmax.all<-NULL
+
+for(i in Sites){
+  bai<-bai.prism.abla[bai.prism.abla$ID==i&bai.prism.abla$Year>2004,]$bai
+  bai.abla<-as.data.frame(bai)
+  n<-2014-length(bai)+1
+  rownames(bai.abla)<-n:2014
+  
+  clim<-climhist[climhist$ID==i,][c(1,2,11,12)]
+  
+  cordat<-seascorr(bai.abla, clim, season_lengths = c(3))
+  plot(cordat)
+  
+  tmax<-cordat$coef[[1]]$primary
+  tmax$month<-cordat.month
+  tmax$Site<-paste0(i)
+  tmax$Species<-"AbLa"
+  tmax<-tmax[tmax$significant==TRUE,]
+  
+  
+  tmin<-cordat$coef[[1]]$secondary
+  tmin$month<-cordat.month
+  tmin$Site<-paste0(i)
+  tmin$Species<-"AbLa"
+  tmin<-tmin[tmin$significant==TRUE,]
+  
+  tmax.all<-rbind(ppt.all, ppt)
+  tmin.all<-rbind(tmean.all, tmean)
+  
 }
 
 
